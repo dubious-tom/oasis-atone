@@ -807,7 +807,7 @@ func InitOsmosisAppForTestnet(app *OsmosisApp, newValAddr bytes.HexBytes, newVal
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
-	bech32Addr, err := bech32.ConvertAndEncode("osmovaloper", bz)
+	bech32Addr, err := bech32.ConvertAndEncode(appparams.Bech32PrefixValAddr, bz)
 	if err != nil {
 		tmos.Exit(err.Error())
 	}
