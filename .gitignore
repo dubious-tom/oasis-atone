@@ -258,3 +258,5 @@ docs/protocol/book
 
 # Release folder
 dist/
+
+.local

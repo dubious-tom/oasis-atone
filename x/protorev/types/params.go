@@ -13,7 +13,8 @@ var (
 	// See https://github.com/osmosis-labs/osmosis/issues/4349 for more details
 	// Note that governance has full ability to change this live on-chain, and this admin can at most prevent protorev from working.
 	// All the settings manager's controls have limits, so it can't lead to a chain halt, excess processing time or prevention of swaps.
-	DefaultAdminAccount = "osmo17nv67dvc7f8yr00rhgxd688gcn9t9wvhn783z4"
+	// Modified for Oasis: Using empty admin for local testing
+	DefaultAdminAccount = ""
 
 	// DefaultNullAddress is the default value for the null account. ProtoRev arbitrage profits denominated in OSMO are sent to this account
 	// as of V24. This address is equivalent to osmo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqmcn030.
@@ -51,8 +52,11 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // Validate validates the set of params
 func (p Params) Validate() error {
-	if _, err := sdk.AccAddressFromBech32(p.Admin); err != nil {
-		return fmt.Errorf("invalid admin account address: %s", p.Admin)
+	// Allow empty admin address (for local testing)
+	if p.Admin != "" {
+		if _, err := sdk.AccAddressFromBech32(p.Admin); err != nil {
+			return fmt.Errorf("invalid admin account address: %s", p.Admin)
+		}
 	}
 
 	return nil
@@ -64,8 +68,11 @@ func ValidateAccount(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if _, err := sdk.AccAddressFromBech32(v); err != nil {
-		return fmt.Errorf("invalid account address: %s", v)
+	// Allow empty admin address (for local testing)
+	if v != "" {
+		if _, err := sdk.AccAddressFromBech32(v); err != nil {
+			return fmt.Errorf("invalid account address: %s", v)
+		}
 	}
 
 	return nil
