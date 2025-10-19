@@ -1,0 +1,23 @@
+version: 2
+updates:
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  labels:
+    - "A:no-changelog"
+    - "V:state/compatible/no_backport"
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: weekly
+  labels:
+    - "A:no-changelog"
+  ignore:
+    - dependency-name: "github.com/cometbft/cometbft"
+      update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  ignore:
+    - dependency-name: "github.com/cosmos/ibc-go"
+      update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  open-pull-requests-limit: 10

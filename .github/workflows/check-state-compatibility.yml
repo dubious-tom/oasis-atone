@@ -1,0 +1,198 @@
+# This workflow checks that a specific commit / branch / tag is state compatible
+# with the latest osmosis version by:
+
+# - building the new `osmosisd` binary with the latest changes
+# - replaying a configurable number of previous blocks from chain history
+
+# Currently, the node starts from a snapshot taken some blocks before the last epoch
+# and waits `DELTA_HALT_HEIGHT` blocks after epoch before finally halting.
+
+# Important Caveat:
+
+# The fact that this workflow succeeds and the binary doesn't fail doesn't
+# directly imply that the new binary is state-compatible.
+# It could be that the binary is not state-compatible, but the condition
+# which would break state compatibility was not present in the chunk of block history used.
+
+# On the other hand, if the workflow fails, the binary is not state-compatible.
+
+name: Check state compatibility
+
+# ************************************ NOTE ************************************
+#
+# DO NOT TRIGGER THIS WORKFLOW ON PUBLIC FORKS
+#
+# This workflow runs on a self-hosted runner and forks to this repository
+# can potentially run dangerous code on the self-hosted runner machine
+# by creating a pull request that executes the code in a workflow.
+#
+# ******************************************************************************
+
+on:
+  pull_request:
+    branches:
+      - "v[0-9]+.x"
+
+env:
+  GENESIS_URL: https://osmosis.fra1.cdn.digitaloceanspaces.com/osmosis-1/genesis.json
+  ADDRBOOK_URL: https://rpc.osmosis.zone/addrbook
+  SNAPSHOT_BUCKET: https://snapshots.osmosis.zone
+  RPC_ENDPOINT: https://rpc.osmosis.zone
+  LCD_ENDPOINT: https://lcd.osmosis.zone
+  DELTA_TARGET_HEIGHT: 50
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  # Compare current mainnet osmosis major version with the major version of github branch
+  # Skip the next job if the current github major is greater than the current mainnet major
+  compare_versions:
+    runs-on: ubuntu-latest
+    outputs:
+      should_i_run: ${{ steps.compare_versions.outputs.should_i_run }}
+      mainnet_major_version: ${{ steps.mainnet_version.outputs.mainnet_major_version }}
+    steps:
+      - name: Get mainnet major version
+        id: mainnet_version
+        run: |
+          RPC_ABCI_INFO=$(curl -s --retry 5 --retry-delay 5 --connect-timeout 30 -H "Accept: application/json" ${{ env.RPC_ENDPOINT }}/abci_info)
+          MAINNET_MAJOR_VERSION=$(echo $RPC_ABCI_INFO | jq -r '.result.response.version' | cut -f 1 -d '.')
+
+          echo "MAINNET_MAJOR_VERSION=$MAINNET_MAJOR_VERSION" >> $GITHUB_ENV
+          echo "mainnet_major_version=$MAINNET_MAJOR_VERSION" >> $GITHUB_OUTPUT
+      - name: Get GitHub branch major version
+        id: compare_versions
+        run: |
+          CURRENT_BRANCH_MAJOR_VERSION=$(echo ${{ github.event.pull_request.base.ref }} | tr -dc '0-9')
+          SHOULD_I_RUN=$(( $CURRENT_BRANCH_MAJOR_VERSION <= $MAINNET_MAJOR_VERSION ))
+
+          echo -n "Mainnet version: $MAINNET_MAJOR_VERSION | Branch version: $CURRENT_BRANCH_MAJOR_VERSION | Should I run: "
+          if (( $CURRENT_BRANCH_MAJOR_VERSION <= $MAINNET_MAJOR_VERSION ));
+          then
+            echo 'should_i_run=true' >> $GITHUB_OUTPUT;
+            echo "true"
+          else
+            echo 'should_i_run=false' >> $GITHUB_OUTPUT;
+            echo "false"
+          fi
+
+  check_state_compatibility:
+    runs-on: buildjet-4vcpu-ubuntu-2204
+    needs: compare_versions
+    timeout-minutes: 30
+    if: ${{ needs.compare_versions.outputs.should_i_run == 'true'}}
+    steps:
+      - name: Get chain major version
+        run: |
+          echo "MAINNET_MAJOR_VERSION=${{ needs.compare_versions.outputs.mainnet_major_version }}" >> $GITHUB_ENV
+      - name: Checkout ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: 🐿 Setup Golang
+        uses: buildjet/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: 🔨 Build the osmosisd binary
+        run: |
+          make build
+          build/osmosisd version
+      - name: 🧪 Initialize Osmosis Node
+        run: |
+          build/osmosisd init runner -o --home ${{ runner.temp }}/.osmosisd/
+      - name: ⏬ Download last pre-epoch snapshot
+        run: |
+          REPO_MAJOR_VERSION=$(echo ${{ github.base_ref }} | sed 's/\.x//')
+          SNAPSHOT_INFO_URL=${{ env.SNAPSHOT_BUCKET }}/$REPO_MAJOR_VERSION/snapshots.json
+
+          # Get the latest pre-epoch snapshot information from bucket
+          SNAPSHOT_INFO=$(curl -sL --retry 5 --retry-delay 5 --connect-timeout 30 -H "Accept: application/json" $SNAPSHOT_INFO_URL)
+          SNAPSHOT_URL=$(echo $SNAPSHOT_INFO | jq -r '.[] | select(.type == "pre-epoch").url')
+          SNAPSHOT_ID=$(echo $SNAPSHOT_INFO |  jq -r '.[] | select(.type == "pre-epoch").filename' | cut -f 1 -d '.')
+
+          # Download snapshot
+          sudo apt install lz4 -y
+          wget -q -O - $SNAPSHOT_URL | lz4 -d | tar -C ${{ runner.temp }}/.osmosisd/ -xvf -
+      - name: ⏬ Download genesis and addrbook
+        run: |
+          CONFIG_FOLDER=${{ runner.temp }}/.osmosisd/config
+
+          # Download genesis
+          wget -O $CONFIG_FOLDER/genesis.json ${{ env.GENESIS_URL }}
+
+          # Download addrbook
+          wget -O $CONFIG_FOLDER/addrbook.json ${{ env.ADDRBOOK_URL }}
+      - name: 🧪 Configure Osmosis Node
+        run: |
+          CONFIG_FOLDER=${{ runner.temp }}/.osmosisd/config
+          REPO_MAJOR_VERSION=$(echo ${{ github.base_ref }} | tr -dc '0-9')
+
+          if [ $REPO_MAJOR_VERSION == $MAINNET_MAJOR_VERSION ]; then
+            # I'm in the latest major, fetch the epoch info from the lcd endpoint
+            LAST_EPOCH_BLOCK_HEIGHT=$(curl -s --retry 5 --retry-delay 5 --connect-timeout 30 ${{ env.LCD_ENDPOINT }}/osmosis/epochs/v1beta1/epochs | jq -r '.epochs[] | select(.identifier=="day").current_epoch_start_height')
+          else
+            # I'm in a previous major, calculate the epoch height from the snapshot height
+            # (Snapshot is taken 100 blocks before epoch)
+
+            SNAPSHOT_INFO_URL=${{ env.SNAPSHOT_BUCKET }}/v$REPO_MAJOR_VERSION/snapshots.json
+            SNAPSHOT_INFO=$(curl -sL --retry 5 --retry-delay 5 --connect-timeout 30 -H "Accept: application/json" $SNAPSHOT_INFO_URL)
+            SNAPSHOT_BLOCK_HEIGHT=$(echo $SNAPSHOT_INFO | jq -r '.[] | select(.type == "pre-epoch").height')
+            LAST_EPOCH_BLOCK_HEIGHT=$(($SNAPSHOT_BLOCK_HEIGHT + 100))
+          fi
+
+          TARGET_HEIGHT=$(($LAST_EPOCH_BLOCK_HEIGHT + ${{ env.DELTA_TARGET_HEIGHT }}))
+          echo "TARGET_HEIGHT=$TARGET_HEIGHT" >> $GITHUB_ENV
+
+          echo "Osmosis repo version: $REPO_MAJOR_VERSION"
+          echo "Last Epoch Height: $LAST_EPOCH_BLOCK_HEIGHT"
+          echo "Target Height: $TARGET_HEIGHT"
+
+          # Edit config.toml for necessary configurations
+          sed -i 's/^indexer =.*/indexer = "null"/' $CONFIG_FOLDER/config.toml
+          sed -i 's/^persistent_peers =.*/persistent_peers = "37c195e518c001099f956202d34af029b04f2c97@p2p.archive.osmosis.zone:26656"/' $CONFIG_FOLDER/config.toml
+          sed -i '/^seeds =/c\seeds = ""' $CONFIG_FOLDER/config.toml
+
+          # Edit app.toml for pruning, and snapshot onfigurations
+          sed -i '/^pruning =/c\pruning = "everything"' $CONFIG_FOLDER/app.toml
+          sed -i '/^snapshot-interval =/c\snapshot-interval = 0' $CONFIG_FOLDER/app.toml
+      - name: 🧪 Start Osmosis Node in the background
+        run: |
+          mkdir ${{ runner.temp }}/logs
+
+          build/osmosisd start \
+            --home ${{ runner.temp }}/.osmosisd > ${{ runner.temp }}/logs/osmosis.log 2>&1 &
+          echo $! > ${{ runner.temp }}/osmosis_pid.txt
+      - name: ⏳ Wait for Chain to start
+        run: |
+          echo -n "Waiting for chain to start"
+
+          until $(curl --output /dev/null --silent --head --fail http://localhost:26657/status) && [ $(curl -s http://localhost:26657/status | jq -r '.result.sync_info.latest_block_height') -ne 0 ]; do
+            printf '.'
+            sleep 1
+            if ! ps -p $(cat ${{ runner.temp }}/osmosis_pid.txt) > /dev/null; then
+              echo "Osmosis process is no longer running. Exiting."
+              exit 1
+            fi
+          done
+      - name: ⏳ Wait for Chain to reach target height
+        run: |
+          until $(curl --output /dev/null --silent --head --fail http://localhost:26657/status) && [ $(curl -s http://localhost:26657/status | jq -r '.result.sync_info.latest_block_height') -ge $TARGET_HEIGHT ]; do
+
+            if ! ps -p $(cat ${{ runner.temp }}/osmosis_pid.txt) > /dev/null; then
+              echo "Osmosis process is no longer running. Exiting."
+              exit 1
+            fi
+
+            CURRENT_HEIGHT=$(curl -s --retry 5 --retry-delay 5 --connect-timeout 30 -H "Accept: application/json" http://localhost:26657/status | jq -r '.result.sync_info.latest_block_height')
+            echo "Current block height is $CURRENT_HEIGHT. Waiting for it to reach $TARGET_HEIGHT..."
+
+            sleep 1
+          done
+      - name: 📤 Upload Upgrade Logs as Artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: ${{ runner.temp }}/logs
