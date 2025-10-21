@@ -14,7 +14,7 @@ require (
 	cosmossdk.io/tools/confix v0.1.2
 	cosmossdk.io/x/circuit v0.1.1
 	cosmossdk.io/x/evidence v0.1.1
-	cosmossdk.io/x/tx v0.13.7
+	cosmossdk.io/x/tx v1.1.0
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/CosmWasm/wasmd v0.53.3
 	github.com/CosmWasm/wasmvm/v2 v2.2.4
@@ -61,7 +61,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.36.0
 	go.opentelemetry.io/otel/sdk v1.37.0
 	go.uber.org/multierr v1.11.0
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
+	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
 	google.golang.org/genproto/googleapis/api v0.0.0-20250707201910-8d1bb00bc6a7
 	google.golang.org/grpc v1.75.1
 	google.golang.org/protobuf v1.36.9
