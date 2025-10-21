@@ -226,6 +226,21 @@ For now, the frontend will work for:
 - ✅ Governance
 - ❌ Swaps (requires local SQS)
 
+## Git History & LFS
+
+**Important Note**: This repository's git history has been cleaned using `git-filter-repo` to remove Git LFS pointer files that referenced unavailable large genesis files from the upstream Osmosis repository.
+
+The upstream Osmosis repository exceeded its GitHub LFS storage quota, making those LFS objects unavailable. Since these large genesis files are not needed for development or deployment of the Oasis fork, they were removed from the entire git history while preserving all code changes and commit lineage.
+
+**What this means**:
+- ✅ All code changes from Osmosis and Oasis fork are preserved
+- ✅ Git history and commit lineage remains intact
+- ✅ Connection to upstream Osmosis repository is maintained
+- ✅ Repository can be cloned and pushed without LFS errors
+- ❌ Some large genesis files from upstream history are no longer accessible (but weren't needed anyway)
+
+If you need to access historical genesis files, they may be available from the [Osmosis networks repository](https://github.com/osmosis-labs/networks) or other archive sources.
+
 ## Repository
 
 - **Origin**: https://github.com/dubious-tom/oasis-atone (this fork)
