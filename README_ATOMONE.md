@@ -181,7 +181,7 @@ Method 3 - Incognito/Private Window:
 1. Modified `frontend/packages/web/config/utils.ts` to override chain configuration for local Oasis chain
 2. Modified `frontend/packages/web/config/generate-lists.ts` to generate custom asset list with STAKE token
 3. All chain configurations (both for Keplr and cosmos-kit) now use correct `oasis` prefix and `stake` token
-4. **Reduced query polling frequency** - Set default refetch interval to 2 minutes (120s) for local/testnet to minimize log clutter. Production uses 30s. Specific queries that need real-time updates (like swap quotes) override this with shorter intervals.
+4. **Reduced log spam** - Disabled TRPC query logging and increased swap quote polling interval to 5 minutes.
 
 ### Modified Files (Frontend)
 
@@ -211,11 +211,20 @@ Method 3 - Incognito/Private Window:
    - **This was blocking API calls** with `oasis` addresses
    - Now accepts any bech32 address prefix
 
-8. **frontend/packages/web/utils/trpc.ts** - Query Polling Configuration
-   - Set default refetch interval to 2 minutes (120s) for local/testnet environments
-   - Set default staleTime to 1 minute (60s) for local/testnet
-   - Reduces log clutter from frequent polling of `getUserAssets`, `getAssetPrice`, `routeTokenOutGivenIn`, and `oneClickTrading.getParameters`
-   - Production still uses 30s/15s intervals for real-time feel
+8. **frontend/packages/web/utils/trpc.ts** - TRPC Logger ⭐ **Eliminates Query Log Spam**
+   - **Changed TRPC logger from opt-out to opt-in** (`NEXT_PUBLIC_TRPC_LOGS=on` required)
+   - Eliminates "query #XX" console logs
+   - To re-enable query logging: add `NEXT_PUBLIC_TRPC_LOGS=on` to `.env.local`
+
+9. **frontend/packages/web/hooks/use-swap.tsx** - Swap Quote Polling ⭐ **Reduces Failed Request Spam**
+   - Increased `refetchInterval` from 5-10 seconds to 5 minutes (300s)
+   - Dramatically reduces failed SQS requests for local development
+   - Swaps don't work on local chains anyway (no SQS server)
+
+10. **frontend/packages/web/hooks/queries/osmosis/use-icns-name.ts** - ICNS Loading Fix ⭐ **Fixes Wallet Button**
+   - Fixed wallet button stuck in loading skeleton for local chains
+   - ICNS query now immediately returns `isLoading: false` for local chains
+   - Wallet button now shows "Connect Wallet" instead of loading skeleton
 
 ### Known Limitations
 
