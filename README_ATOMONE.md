@@ -181,6 +181,7 @@ Method 3 - Incognito/Private Window:
 1. Modified `frontend/packages/web/config/utils.ts` to override chain configuration for local Oasis chain
 2. Modified `frontend/packages/web/config/generate-lists.ts` to generate custom asset list with STAKE token
 3. All chain configurations (both for Keplr and cosmos-kit) now use correct `oasis` prefix and `stake` token
+4. **Reduced query polling frequency** - Set default refetch interval to 2 minutes (120s) for local/testnet to minimize log clutter. Production uses 30s. Specific queries that need real-time updates (like swap quotes) override this with shorter intervals.
 
 ### Modified Files (Frontend)
 
@@ -209,6 +210,12 @@ Method 3 - Incognito/Private Window:
    - Removed hardcoded `startsWith("osmo")` validation from `OsmoAddressSchema` and `UserOsmoAddressSchema`
    - **This was blocking API calls** with `oasis` addresses
    - Now accepts any bech32 address prefix
+
+8. **frontend/packages/web/utils/trpc.ts** - Query Polling Configuration
+   - Set default refetch interval to 2 minutes (120s) for local/testnet environments
+   - Set default staleTime to 1 minute (60s) for local/testnet
+   - Reduces log clutter from frequent polling of `getUserAssets`, `getAssetPrice`, `routeTokenOutGivenIn`, and `oneClickTrading.getParameters`
+   - Production still uses 30s/15s intervals for real-time feel
 
 ### Known Limitations
 
