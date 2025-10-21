@@ -12,7 +12,7 @@ import (
 // MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
 func MakeEncodingConfig() EncodingConfig {
 	cdc := codec.New()
-	interfaceRegistry := testutil.CodecOptions{AccAddressPrefix: "osmo", ValAddressPrefix: "osmovaloper"}.NewInterfaceRegistry()
+	interfaceRegistry := testutil.CodecOptions{AccAddressPrefix: Bech32PrefixAccAddr, ValAddressPrefix: Bech32PrefixValAddr}.NewInterfaceRegistry()
 	marshaler := codec.NewAminoCodec(cdc)
 
 	return EncodingConfig{
