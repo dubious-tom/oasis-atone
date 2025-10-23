@@ -6,9 +6,9 @@ package keepers
 import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
-	transfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	tendermint "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
+	transfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
+	tendermint "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
 
 	"cosmossdk.io/x/evidence"
 	"cosmossdk.io/x/upgrade"
@@ -17,7 +17,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// "cosmossdk.io/x/crisis"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/gov"
@@ -26,10 +27,11 @@ import (
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
 	"github.com/cosmos/ibc-go/modules/capability"
 	ibcwasm "github.com/cosmos/ibc-go/modules/light-clients/08-wasm"
-	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
+	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
 
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 
@@ -99,7 +101,8 @@ var AppModuleBasics = module.NewBasicManager(
 		},
 	),
 	params.AppModuleBasic{},
-	crisis.AppModuleBasic{},
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	authzmodule.AppModuleBasic{},
 	consensus.AppModuleBasic{},

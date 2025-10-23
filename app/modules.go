@@ -9,26 +9,35 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/consensus"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
+
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// // TODO ATOMONE: Re-enable when async-icq v10 is available
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// // 	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 
 	ibcwasm "github.com/cosmos/ibc-go/modules/light-clients/08-wasm"
 	ibcwasmtypes "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
+
+	// TODO ATOMONE: IBC v10 testing/types package moved or removed - need to find new location
+	// ibctestingtypes "github.com/cosmos/ibc-go/v10/testing/types"
 
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
 	ibchookstypes "github.com/osmosis-labs/osmosis/x/ibc-hooks/types"
 
-	ica "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts"
-	icatypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/types"
+	ica "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts"
+	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// // TODO ATOMONE: Re-enable when async-icq v10 is available
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// // 	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	downtimemodule "github.com/osmosis-labs/osmosis/v31/x/downtime-detector/module"
 	downtimetypes "github.com/osmosis-labs/osmosis/v31/x/downtime-detector/types"
@@ -49,8 +58,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// "cosmossdk.io/x/crisis"
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// crisistypes "cosmossdk.io/x/crisis/types"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
@@ -113,11 +125,13 @@ import (
 // moduleAccountPermissions defines module account permissions
 // TODO: Having to input nil's here is unacceptable, we need a way to automatically derive this.
 var moduleAccountPermissions = map[string][]string{
-	authtypes.FeeCollectorName:               nil,
-	distrtypes.ModuleName:                    nil,
-	ibchookstypes.ModuleName:                 nil,
-	icatypes.ModuleName:                      nil,
-	icqtypes.ModuleName:                      nil,
+	authtypes.FeeCollectorName: nil,
+	distrtypes.ModuleName:      nil,
+	ibchookstypes.ModuleName:   nil,
+	icatypes.ModuleName:        nil,
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// // TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icqtypes.ModuleName:                      nil,
 	minttypes.ModuleName:                     {authtypes.Minter, authtypes.Burner},
 	minttypes.DeveloperVestingModuleAcctName: nil,
 	stakingtypes.BondedPoolName:              {authtypes.Burner, authtypes.Staking},
@@ -205,10 +219,13 @@ func appModules(
 		valsetprefmodule.NewAppModule(appCodec, *app.ValidatorSetPreferenceKeeper),
 		ibcratelimitmodule.NewAppModule(*app.RateLimitingICS4Wrapper),
 		ibc_hooks.NewAppModule(app.AccountKeeper, *app.IBCHooksKeeper),
-		icq.NewAppModule(*app.AppKeepers.ICQKeeper, app.GetSubspace(icqtypes.ModuleName)),
+		// TODO ATOMONE: Re-enable when async-icq v10 is available
+		// // TODO ATOMONE: Re-enable when async-icq v10 is available
+		// icq.NewAppModule(*app.AppKeepers.ICQKeeper, app.GetSubspace(icqtypes.ModuleName)),
 		packetforward.NewAppModule(app.PacketForwardKeeper, app.GetSubspace(packetforwardtypes.ModuleName)),
 		cwpoolmodule.NewAppModule(appCodec, *app.CosmwasmPoolKeeper),
-		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
+		// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+		// crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 		auction.NewAppModule(appCodec, *app.AuctionKeeper),
 		smartaccount.NewAppModule(appCodec, *app.SmartAccountKeeper),
 	}
@@ -270,7 +287,8 @@ func OrderInitGenesis(allModuleNames []string) []string {
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		crisistypes.ModuleName,
+		// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+		// crisistypes.ModuleName,
 		ibchost.ModuleName,
 		icatypes.ModuleName,
 		gammtypes.ModuleName,
@@ -301,7 +319,9 @@ func OrderInitGenesis(allModuleNames []string) []string {
 		ibcwasmtypes.ModuleName,
 		// ibc_hooks after auth keeper
 		ibchookstypes.ModuleName,
-		icqtypes.ModuleName,
+		// TODO ATOMONE: Re-enable when async-icq v10 is available
+		// // TODO ATOMONE: Re-enable when async-icq v10 is available
+		// icqtypes.ModuleName,
 		packetforwardtypes.ModuleName,
 		cosmwasmpooltypes.ModuleName,
 		auctiontypes.ModuleName,
@@ -326,10 +346,12 @@ func (app *OsmosisApp) GetBankKeeper() simtypes.BankKeeper {
 	return app.AppKeepers.BankKeeper
 }
 
+// TODO ATOMONE: IBC v10 testing/types package moved or removed - need to find new location
 // Required for ibctesting
-func (app *OsmosisApp) GetStakingKeeper() ibctestingtypes.StakingKeeper {
-	return *app.AppKeepers.StakingKeeper // Dereferencing the pointer
-}
+//
+//	func (app *OsmosisApp) GetStakingKeeper() ibctestingtypes.StakingKeeper {
+//		return *app.AppKeepers.StakingKeeper // Dereferencing the pointer
+//	}
 func (app *OsmosisApp) GetSDKStakingKeeper() stakingkeeper.Keeper {
 	return *app.AppKeepers.StakingKeeper // Dereferencing the pointer
 }

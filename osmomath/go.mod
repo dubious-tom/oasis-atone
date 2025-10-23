@@ -1,8 +1,6 @@
 module github.com/osmosis-labs/osmosis/osmomath
 
-go 1.23.0
-
-toolchain go1.24.1
+go 1.24.5
 
 require (
 	cosmossdk.io/math v1.4.0
@@ -106,7 +104,6 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-// Direct cosmos-sdk branch link: https://github.com/osmosis-labs/cosmos-sdk/tree/osmo-v30/0.50.14, current branch: osmo-v30/0.50.14
-// Direct commit link: https://github.com/osmosis-labs/cosmos-sdk/commit/1f78f02de9b2f60779c5062686201b45361fcb3f
-// Direct tag link: https://github.com/osmosis-labs/cosmos-sdk/releases/tag/v0.50.14-v30-osmo
-replace github.com/cosmos/cosmos-sdk => github.com/osmosis-labs/cosmos-sdk v0.50.14-v30-osmo
+// AtomOne cosmos-sdk fork for future ICS1 compatibility
+// Direct tag link: https://github.com/atomone-hub/cosmos-sdk/releases/tag/v0.50.14-atomone.1
+replace github.com/cosmos/cosmos-sdk => github.com/atomone-hub/cosmos-sdk v0.50.14-atomone.1

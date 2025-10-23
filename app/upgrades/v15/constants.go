@@ -3,7 +3,8 @@ package v15
 import (
 	store "cosmossdk.io/store/types"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	"github.com/osmosis-labs/osmosis/v31/app/upgrades"
 	poolmanagertypes "github.com/osmosis-labs/osmosis/v31/x/poolmanager/types"

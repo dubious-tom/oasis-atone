@@ -1,8 +1,6 @@
 module github.com/osmosis-labs/osmosis/osmoutils
 
-go 1.23.0
-
-toolchain go1.24.1
+go 1.24.5
 
 require (
 	cosmossdk.io/log v1.4.1
@@ -14,7 +12,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.9
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/iavl v1.2.6
-	github.com/cosmos/ibc-go/v8 v8.7.0
+	github.com/cosmos/ibc-go/v10 v10.2.0
 	github.com/osmosis-labs/osmosis/osmomath v0.0.12-0.20240517165907-1625703bc16d
 	github.com/spf13/cast v1.7.1
 	github.com/spf13/cobra v1.8.1

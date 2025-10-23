@@ -20,8 +20,10 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
 	consensusparamtypes "github.com/cosmos/cosmos-sdk/x/consensus/types"
-	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// crisiskeeper "cosmossdk.io/x/crisis/keeper"
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// crisistypes "cosmossdk.io/x/crisis/types"
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govkeeper "github.com/cosmos/cosmos-sdk/x/gov/keeper"
@@ -35,13 +37,14 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icq "github.com/cosmos/ibc-apps/modules/async-icq/v8"
+	// icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	capabilitytypes "github.com/cosmos/ibc-go/modules/capability/types"
-	icacontroller "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller"
-	icacontrollerkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/keeper"
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
+	icacontroller "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller"
+	icacontrollerkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/keeper"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
 
 	appparams "github.com/osmosis-labs/osmosis/v31/app/params"
 	"github.com/osmosis-labs/osmosis/v31/x/cosmwasmpool"
@@ -58,26 +61,27 @@ import (
 	ibchookskeeper "github.com/osmosis-labs/osmosis/x/ibc-hooks/keeper"
 	ibchookstypes "github.com/osmosis-labs/osmosis/x/ibc-hooks/types"
 
-	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
 	ibcwasmkeeper "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/keeper"
 	ibcwasmtypes "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/types"
-	icahost "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host"
-	icahostkeeper "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/keeper"
-	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	ibcclienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	ibcconnectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
-	porttypes "github.com/cosmos/ibc-go/v8/modules/core/05-port/types"
-	ibchost "github.com/cosmos/ibc-go/v8/modules/core/exported"
-	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	icahost "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host"
+	icahostkeeper "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/keeper"
+	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	ibcclienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	ibcconnectiontypes "github.com/cosmos/ibc-go/v10/modules/core/03-connection/types"
+	porttypes "github.com/cosmos/ibc-go/v10/modules/core/05-port/types"
+	ibchost "github.com/cosmos/ibc-go/v10/modules/core/exported"
+	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	packetforward "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward"
 	packetforwardkeeper "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/keeper"
 	packetforwardtypes "github.com/cosmos/ibc-apps/middleware/packet-forward-middleware/v8/packetforward/types"
 
 	// IBC Transfer: Defines the "transfer" IBC port
-	transfer "github.com/cosmos/ibc-go/v8/modules/apps/transfer"
+	transfer "github.com/cosmos/ibc-go/v10/modules/apps/transfer"
 
 	"github.com/osmosis-labs/osmosis/v31/x/smart-account/authenticator"
 	smartaccountkeeper "github.com/osmosis-labs/osmosis/v31/x/smart-account/keeper"
@@ -130,7 +134,8 @@ type AppKeepers struct {
 	// "Special" keepers
 	ParamsKeeper          *paramskeeper.Keeper
 	CapabilityKeeper      *capabilitykeeper.Keeper
-	CrisisKeeper          *crisiskeeper.Keeper
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// CrisisKeeper          *crisiskeeper.Keeper
 	UpgradeKeeper         *upgradekeeper.Keeper
 	ConsensusParamsKeeper *consensusparamkeeper.Keeper
 
@@ -140,7 +145,8 @@ type AppKeepers struct {
 	ScopedICAControllerKeeper capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper      capabilitykeeper.ScopedKeeper
 	ScopedWasmKeeper          capabilitykeeper.ScopedKeeper
-	ScopedICQKeeper           capabilitykeeper.ScopedKeeper
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// ScopedICQKeeper           capabilitykeeper.ScopedKeeper
 
 	// "Normal" keepers
 	AccountKeeper                *authkeeper.AccountKeeper
@@ -154,7 +160,8 @@ type AppKeepers struct {
 	IBCHooksKeeper               *ibchookskeeper.Keeper
 	ICAHostKeeper                *icahostkeeper.Keeper
 	ICAControllerKeeper          *icacontrollerkeeper.Keeper
-	ICQKeeper                    *icqkeeper.Keeper
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// ICQKeeper                    *icqkeeper.Keeper
 	TransferKeeper               *ibctransferkeeper.Keeper
 	IBCWasmClientKeeper          *ibcwasmkeeper.Keeper
 	EvidenceKeeper               *evidencekeeper.Keeper
@@ -363,30 +370,32 @@ func (appKeepers *AppKeepers) InitNormalKeepers(
 	// channel.RecvPacket -> fee.OnRecvPacket -> icaHost.OnRecvPacket
 	icaHostStack := icahost.NewIBCModule(*appKeepers.ICAHostKeeper)
 
-	// ICQ Keeper
-	icqKeeper := icqkeeper.NewKeeper(
-		appCodec,
-		appKeepers.keys[icqtypes.StoreKey],
-		appKeepers.IBCKeeper.ChannelKeeper, // may be replaced with middleware
-		appKeepers.IBCKeeper.ChannelKeeper,
-		appKeepers.IBCKeeper.PortKeeper,
-		appKeepers.ScopedICQKeeper,
-		bApp.GRPCQueryRouter(),
-		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
-	)
-	appKeepers.ICQKeeper = &icqKeeper
-
-	// Create Async ICQ module
-	icqModule := icq.NewIBCModule(*appKeepers.ICQKeeper)
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// // ICQ Keeper
+	// icqKeeper := icqkeeper.NewKeeper(
+	// 	appCodec,
+	// 	appKeepers.keys[icqtypes.StoreKey],
+	// 	appKeepers.IBCKeeper.ChannelKeeper, // may be replaced with middleware
+	// 	appKeepers.IBCKeeper.ChannelKeeper,
+	// 	appKeepers.IBCKeeper.PortKeeper,
+	// 	appKeepers.ScopedICQKeeper,
+	// 	bApp.GRPCQueryRouter(),
+	// 	authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	// )
+	// appKeepers.ICQKeeper = &icqKeeper
+	//
+	// // Create Async ICQ module
+	// icqModule := icq.NewIBCModule(*appKeepers.ICQKeeper)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
 		AddRoute(icahosttypes.SubModuleName, icaHostStack).
 		// The transferIBC module is replaced by rateLimitingTransferModule
-		AddRoute(ibctransfertypes.ModuleName, appKeepers.TransferStack).
-		// Add icq modules to IBC router
-		AddRoute(icqtypes.ModuleName, icqModule)
+		AddRoute(ibctransfertypes.ModuleName, appKeepers.TransferStack)
+		// TODO ATOMONE: Re-enable when async-icq v10 is available
+		// // Add icq modules to IBC router
+		// AddRoute(icqtypes.ModuleName, icqModule)
 	// Note: the sealing is done after creating wasmd and wiring that up
 
 	// create evidence keeper with router
@@ -759,14 +768,18 @@ func (appKeepers *AppKeepers) InitSpecialKeepers(
 	appKeepers.ScopedICAControllerKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	appKeepers.ScopedTransferKeeper = appKeepers.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	appKeepers.ScopedWasmKeeper = appKeepers.CapabilityKeeper.ScopeToModule(wasmtypes.ModuleName)
-	appKeepers.ScopedICQKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// appKeepers.ScopedICQKeeper = appKeepers.CapabilityKeeper.ScopeToModule(icqtypes.ModuleName)
 	appKeepers.CapabilityKeeper.Seal()
 
 	// TODO: Make a SetInvCheckPeriod fn on CrisisKeeper.
 	// IMO, its bad design atm that it requires this in state machine initialization
-	crisisKeeper := crisiskeeper.NewKeeper(
-		appCodec, runtime.NewKVStoreService(appKeepers.keys[crisistypes.StoreKey]), invCheckPeriod, appKeepers.BankKeeper, authtypes.FeeCollectorName, authtypes.NewModuleAddress(govtypes.ModuleName).String(), addresscodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()))
-	appKeepers.CrisisKeeper = crisisKeeper
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// crisisKeeper := crisiskeeper.NewKeeper(
+		// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+		// appCodec, runtime.NewKVStoreService(appKeepers.keys[crisistypes.StoreKey]), invCheckPeriod, appKeepers.BankKeeper, authtypes.FeeCollectorName, authtypes.NewModuleAddress(govtypes.ModuleName).String(), addresscodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()))
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// appKeepers.CrisisKeeper = crisisKeeper
 
 	upgradeKeeper := upgradekeeper.NewKeeper(
 		skipUpgradeHeights,
@@ -790,7 +803,8 @@ func (appKeepers *AppKeepers) initParamsKeeper(appCodec codec.BinaryCodec, legac
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName)
-	paramsKeeper.Subspace(crisistypes.ModuleName)
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// paramsKeeper.Subspace(crisistypes.ModuleName)
 
 	// register the key tables for legacy param subspaces
 	keyTable := ibcclienttypes.ParamKeyTable()
@@ -811,7 +825,8 @@ func (appKeepers *AppKeepers) initParamsKeeper(appCodec codec.BinaryCodec, legac
 	paramsKeeper.Subspace(twaptypes.ModuleName)
 	paramsKeeper.Subspace(ibcratelimittypes.ModuleName)
 	paramsKeeper.Subspace(concentratedliquiditytypes.ModuleName)
-	paramsKeeper.Subspace(icqtypes.ModuleName)
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// 	paramsKeeper.Subspace(icqtypes.ModuleName)
 	paramsKeeper.Subspace(cosmwasmpooltypes.ModuleName)
 	paramsKeeper.Subspace(ibchookstypes.ModuleName)
 	paramsKeeper.Subspace(smartaccounttypes.ModuleName).WithKeyTable(smartaccounttypes.ParamKeyTable())
@@ -909,7 +924,8 @@ func KVStoreKeys() []string {
 		downtimetypes.StoreKey,
 		slashingtypes.StoreKey,
 		govtypes.StoreKey,
-		crisistypes.StoreKey,
+		// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+		// crisistypes.StoreKey,
 		paramstypes.StoreKey,
 		consensusparamtypes.StoreKey,
 		ibchost.StoreKey,
@@ -936,7 +952,8 @@ func KVStoreKeys() []string {
 		valsetpreftypes.StoreKey,
 		protorevtypes.StoreKey,
 		ibchookstypes.StoreKey,
-		icqtypes.StoreKey,
+		// TODO ATOMONE: Re-enable when async-icq v10 is available
+		// 		icqtypes.StoreKey,
 		packetforwardtypes.StoreKey,
 		cosmwasmpooltypes.StoreKey,
 		auctiontypes.StoreKey,

@@ -32,10 +32,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	transfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
-	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
-	ibctesting "github.com/cosmos/ibc-go/v8/testing"
+	transfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v10/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v10/modules/core/04-channel/types"
+	ibctesting "github.com/cosmos/ibc-go/v10/testing"
 
 	"github.com/osmosis-labs/osmosis/v31/tests/osmosisibctesting"
 
@@ -106,8 +106,9 @@ func NewTransferPath(chainA, chainB *osmosisibctesting.TestChain) *ibctesting.Pa
 	path := ibctesting.NewPath(chainA.TestChain, chainB.TestChain)
 	path.EndpointA.ChannelConfig.PortID = ibctesting.TransferPort
 	path.EndpointB.ChannelConfig.PortID = ibctesting.TransferPort
-	path.EndpointA.ChannelConfig.Version = transfertypes.Version
-	path.EndpointB.ChannelConfig.Version = transfertypes.Version
+	// TODO ATOMONE: IBC v10 changed Version to V1
+	path.EndpointA.ChannelConfig.Version = transfertypes.V1
+	path.EndpointB.ChannelConfig.Version = transfertypes.V1
 
 	return path
 }
@@ -254,7 +255,8 @@ func (suite *HooksTestSuite) TestDeriveIntermediateSender() {
 
 func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 	var (
-		trace    transfertypes.DenomTrace
+		// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom
+		trace    transfertypes.Denom
 		amount   osmomath.Int
 		receiver string
 		status   testutils.Status
@@ -297,11 +299,13 @@ func (suite *HooksTestSuite) TestOnRecvPacketHooks() {
 
 			tc.malleate(&status)
 
-			data := transfertypes.NewFungibleTokenPacketData(trace.GetFullDenomPath(), amount.String(), suite.chainA.SenderAccount.GetAddress().String(), receiver, "")
+			// TODO ATOMONE: IBC v10 renamed GetFullDenomPath to Path
+			data := transfertypes.NewFungibleTokenPacketData(trace.Path(), amount.String(), suite.chainA.SenderAccount.GetAddress().String(), receiver, "")
 			packet := channeltypes.NewPacket(data.GetBytes(), seq, path.EndpointA.ChannelConfig.PortID, path.EndpointA.ChannelID, path.EndpointB.ChannelConfig.PortID, path.EndpointB.ChannelID, clienttypes.NewHeight(1, 100), 0)
 
+			// TODO ATOMONE: IBC v10 requires channelVersion parameter
 			ack := suite.chainB.GetOsmosisApp().TransferStack.
-				OnRecvPacket(suite.chainB.GetContext(), packet, suite.chainA.SenderAccount.GetAddress())
+				OnRecvPacket(suite.chainB.GetContext(), "ics20-1", packet, suite.chainA.SenderAccount.GetAddress())
 
 			if tc.expPass {
 				suite.Require().True(ack.Success())
@@ -352,14 +356,15 @@ func (suite *HooksTestSuite) receivePacket(receiver, memo string) []byte {
 }
 
 func (suite *HooksTestSuite) receivePacketWithSequence(receiver, memo string, prevSequence uint64) []byte {
-	channelCap := suite.chainB.GetChannelCapability(
-		suite.pathAB.EndpointB.ChannelConfig.PortID,
-		suite.pathAB.EndpointB.ChannelID)
+	// TODO ATOMONE: IBC v10 removed GetChannelCapability and capability parameter from SendPacket
+	// channelCap := suite.chainB.GetChannelCapability(
+	// 	suite.pathAB.EndpointB.ChannelConfig.PortID,
+	// 	suite.pathAB.EndpointB.ChannelID)
 
 	packet := suite.makeMockPacket(receiver, memo, prevSequence)
 
 	_, err := suite.chainB.GetOsmosisApp().HooksICS4Wrapper.SendPacket(
-		suite.chainB.GetContext(), channelCap, packet.SourcePort, packet.SourceChannel, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
+		suite.chainB.GetContext(), packet.SourcePort, packet.SourceChannel, packet.TimeoutHeight, packet.TimeoutTimestamp, packet.Data)
 	suite.Require().NoError(err, "IBC send failed. Expected success. %s", err)
 
 	// Update both clients
@@ -852,7 +857,8 @@ func (suite *HooksTestSuite) SetupCrosschainRegistry(chainName Chain) (sdk.AccAd
 
 	// Denom traces
 	CBAPath := fmt.Sprintf("transfer/%s/transfer/%s", suite.pathAB.EndpointA.ChannelID, suite.pathBC.EndpointA.ChannelID)
-	denomTrace0CBA := transfertypes.DenomTrace{Path: CBAPath, BaseDenom: "token0"}
+	// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom and changed Path to Trace (slice of Hop)
+	denomTrace0CBA := transfertypes.ExtractDenomFromPath(CBAPath + "/token0")
 	token0CBA := denomTrace0CBA.IBCDenom()
 
 	// Move forward one block
@@ -1570,11 +1576,12 @@ func (suite *HooksTestSuite) TestCrosschainSwapsViaIBCMultiHop() {
 	suite.Require().NoError(err)
 
 	// Calculate the names of the tokens when sent via IBC
+	// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom, use ExtractDenomFromPath
 	ACBPath := fmt.Sprintf("transfer/%s/transfer/%s", suite.pathBC.EndpointB.ChannelID, suite.pathAC.EndpointB.ChannelID)
-	denomTrace0ACB := transfertypes.DenomTrace{Path: ACBPath, BaseDenom: "token0"}
+	denomTrace0ACB := transfertypes.ExtractDenomFromPath(ACBPath + "/token0")
 	token0ACB := denomTrace0ACB.IBCDenom()
 
-	denomTrace1AB := transfertypes.DenomTrace{Path: fmt.Sprintf("transfer/%s", suite.pathAB.EndpointB.ChannelID), BaseDenom: "token1"}
+	denomTrace1AB := transfertypes.ExtractDenomFromPath(fmt.Sprintf("transfer/%s/token1", suite.pathAB.EndpointB.ChannelID))
 	token1AB := denomTrace1AB.IBCDenom()
 
 	osmosisAppB := suite.chainB.GetOsmosisApp()
@@ -1647,10 +1654,11 @@ func (suite *HooksTestSuite) SimpleNativeTransfer(token string, amount osmomath.
 		receiveChannel := suite.GetReceiverChannel(fromChain, toChain)
 		// Transfers must be prepended to the denom path before hashing
 		// Trailing/Prepended slashes are trimmed as necessary
+		// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom, use ExtractDenomFromPath
 		newPrefix := strings.TrimRight(transfertypes.GetDenomPrefix("transfer", receiveChannel), "/")
 		prevPrefix = strings.TrimRight(newPrefix+"/"+prevPrefix, "/")
 		prevPrefix = strings.TrimLeft(prevPrefix, "/")
-		denom = transfertypes.DenomTrace{Path: prevPrefix, BaseDenom: token}.IBCDenom()
+		denom = transfertypes.ExtractDenomFromPath(prevPrefix + "/" + token).IBCDenom()
 		prev = toChain
 	}
 	return denom
@@ -1661,7 +1669,8 @@ func (suite *HooksTestSuite) GetPath(chain1, chain2 Chain) string {
 }
 
 func (suite *HooksTestSuite) GetIBCDenom(a Chain, b Chain, denom string) string {
-	return transfertypes.DenomTrace{Path: suite.GetPath(a, b), BaseDenom: denom}.IBCDenom()
+	// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom, use ExtractDenomFromPath
+	return transfertypes.ExtractDenomFromPath(suite.GetPath(a, b) + "/" + denom).IBCDenom()
 }
 
 type ChainActorDefinition struct {
@@ -1703,11 +1712,12 @@ func (suite *HooksTestSuite) TestMultiHopXCS() {
 		requireAck        []bool
 	}{
 		{
-			name:             "A's token0 in B wrapped as B.C.A, send to A for unwrapping and then swap for A's token1, receive into B",
-			sender:           actorChainB,
-			swapFor:          "token1",
-			receiver:         actorChainB,
-			receivedToken:    transfertypes.DenomTrace{Path: suite.GetPath(ChainA, ChainB), BaseDenom: "token1"}.IBCDenom(),
+			name:     "A's token0 in B wrapped as B.C.A, send to A for unwrapping and then swap for A's token1, receive into B",
+			sender:   actorChainB,
+			swapFor:  "token1",
+			receiver: actorChainB,
+			// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom, use ExtractDenomFromPath
+			receivedToken:    transfertypes.ExtractDenomFromPath(suite.GetPath(ChainA, ChainB) + "/token1").IBCDenom(),
 			initialDirection: BtoA,
 			setupInitialToken: func() string {
 				return suite.SimpleNativeTransfer("token0", sendAmount, []Chain{ChainA, ChainC, ChainB})
@@ -1739,10 +1749,11 @@ func (suite *HooksTestSuite) TestMultiHopXCS() {
 		{
 			name: "Native to OsmoNative into same chain",
 			// This is currently failing when running all tests together but not individually. TODO: Figure out why
-			sender:           actorChainB,
-			swapFor:          "token0",
-			receiver:         actorChainB,
-			receivedToken:    transfertypes.DenomTrace{Path: suite.GetPath(ChainA, ChainB), BaseDenom: "token0"}.IBCDenom(),
+			sender:   actorChainB,
+			swapFor:  "token0",
+			receiver: actorChainB,
+			// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom, use ExtractDenomFromPath
+			receivedToken:    transfertypes.ExtractDenomFromPath(suite.GetPath(ChainA, ChainB) + "/token0").IBCDenom(),
 			initialDirection: BtoA,
 			setupInitialToken: func() string {
 				suite.SimpleNativeTransfer("token1", osmomath.NewInt(defaultPoolAmount), []Chain{ChainB, ChainA})
@@ -1759,9 +1770,10 @@ func (suite *HooksTestSuite) TestMultiHopXCS() {
 		},
 
 		{
-			name:             "OsmoNative to Native into same chain",
-			sender:           actorChainB,
-			swapFor:          transfertypes.DenomTrace{Path: suite.GetPath(ChainA, ChainB), BaseDenom: "token1"}.IBCDenom(),
+			name:   "OsmoNative to Native into same chain",
+			sender: actorChainB,
+			// TODO ATOMONE: IBC v10 renamed DenomTrace to Denom, use ExtractDenomFromPath
+			swapFor:          transfertypes.ExtractDenomFromPath(suite.GetPath(ChainA, ChainB) + "/token1").IBCDenom(),
 			receiver:         actorChainB,
 			receivedToken:    "token1",
 			initialDirection: BtoA,

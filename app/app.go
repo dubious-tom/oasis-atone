@@ -44,8 +44,8 @@ import (
 	ibcwasmkeeper "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/keeper"
 	ibcwasmtypes "github.com/cosmos/ibc-go/modules/light-clients/08-wasm/types"
 
-	"github.com/cosmos/ibc-go/v8/modules/apps/transfer"
-	ibc "github.com/cosmos/ibc-go/v8/modules/core"
+	"github.com/cosmos/ibc-go/v10/modules/apps/transfer"
+	ibc "github.com/cosmos/ibc-go/v10/modules/core"
 
 	"github.com/osmosis-labs/osmosis/v31/ingest/common/poolextractor"
 	"github.com/osmosis-labs/osmosis/v31/ingest/common/pooltracker"
@@ -109,7 +109,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// "cosmossdk.io/x/crisis"
 
 	appparams "github.com/osmosis-labs/osmosis/v31/app/params"
 
@@ -473,7 +474,8 @@ func NewOsmosisApp(
 
 	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
 	// we prefer to be more strict in what arguments the modules expect.
-	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
 
 	// NOTE: All module / keeper changes should happen prior to this module.NewManager line being called.
 	// However in the event any changes do need to happen after this call, ensure that that keeper

@@ -12,8 +12,10 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	"github.com/osmosis-labs/osmosis/v31/wasmbinding"
 	ibcratelimit "github.com/osmosis-labs/osmosis/v31/x/ibc-rate-limit"

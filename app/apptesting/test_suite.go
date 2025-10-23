@@ -123,12 +123,14 @@ func (s *KeeperTestHelper) Setup() {
 	}
 	for _, val := range vals {
 		consAddr, _ := val.GetConsAddr()
+		// TODO ATOMONE: SDK v0.50 changed NewValidatorSigningInfo signature to add startHeight and indexOffset
 		signingInfo := slashingtypes.NewValidatorSigningInfo(
 			consAddr,
-			s.Ctx.BlockHeight(),
-			time.Unix(0, 0),
-			false,
-			0,
+			s.Ctx.BlockHeight(), // startHeight
+			0,                   // indexOffset
+			time.Unix(0, 0),     // jailedUntil
+			false,               // tombstoned
+			0,                   // missedBlocksCounter
 		)
 		err := s.App.SlashingKeeper.SetValidatorSigningInfo(s.Ctx, consAddr, signingInfo)
 		if err != nil {
@@ -153,12 +155,14 @@ func (s *KeeperTestHelper) SetupWithCustomChainId(chainId string) {
 	}
 	for _, val := range vals {
 		consAddr, _ := val.GetConsAddr()
+		// TODO ATOMONE: SDK v0.50 changed NewValidatorSigningInfo signature to add startHeight and indexOffset
 		signingInfo := slashingtypes.NewValidatorSigningInfo(
 			consAddr,
-			s.Ctx.BlockHeight(),
-			time.Unix(0, 0),
-			false,
-			0,
+			s.Ctx.BlockHeight(), // startHeight
+			0,                   // indexOffset
+			time.Unix(0, 0),     // jailedUntil
+			false,               // tombstoned
+			0,                   // missedBlocksCounter
 		)
 		err := s.App.SlashingKeeper.SetValidatorSigningInfo(s.Ctx, consAddr, signingInfo)
 		if err != nil {
@@ -380,12 +384,14 @@ func (s *KeeperTestHelper) SetupValidator(bondStatus stakingtypes.BondStatus) sd
 	consAddr, err := val.GetConsAddr()
 	s.Suite.Require().NoError(err)
 
+	// TODO ATOMONE: SDK v0.50 changed NewValidatorSigningInfo signature to add startHeight and indexOffset
 	signingInfo := slashingtypes.NewValidatorSigningInfo(
 		consAddr,
-		s.Ctx.BlockHeight(),
-		time.Unix(0, 0),
-		false,
-		0,
+		s.Ctx.BlockHeight(), // startHeight
+		0,                   // indexOffset
+		time.Unix(0, 0),     // jailedUntil
+		false,               // tombstoned
+		0,                   // missedBlocksCounter
 	)
 	err = s.App.SlashingKeeper.SetValidatorSigningInfo(s.Ctx, consAddr, signingInfo)
 	s.Require().NoError(err)

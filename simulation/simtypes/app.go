@@ -11,7 +11,8 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 
-	ibctestingtypes "github.com/cosmos/ibc-go/v8/testing/types"
+	// TODO ATOMONE: IBC v10 testing/types package moved or removed
+	// ibctestingtypes "github.com/cosmos/ibc-go/v10/testing/types"
 
 	poolmanagertypes "github.com/osmosis-labs/osmosis/v31/x/poolmanager/types"
 )

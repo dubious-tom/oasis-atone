@@ -10,11 +10,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
-	icahosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"
-	ibctransfertypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	icacontrollertypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/controller/types"
+	icahosttypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/host/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 
-	icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
+	// TODO ATOMONE: Re-enable when async-icq v10 is available
+	// icqtypes "github.com/cosmos/ibc-apps/modules/async-icq/v8/types"
 
 	"github.com/osmosis-labs/osmosis/osmomath"
 	"github.com/osmosis-labs/osmosis/osmoutils"
@@ -37,7 +38,9 @@ import (
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
+
+	// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+	// crisistypes "cosmossdk.io/x/crisis/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
@@ -90,8 +93,10 @@ func CreateUpgradeHandler(
 				keyTable = slashingtypes.ParamKeyTable() //nolint:staticcheck
 			case govtypes.ModuleName:
 				keyTable = govv1.ParamKeyTable() //nolint:staticcheck
-			case crisistypes.ModuleName:
-				keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
+			// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+			// case crisistypes.ModuleName:
+			// TODO ATOMONE: Crisis module removed in SDK v0.50+ - need to refactor
+			// keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
 
 			// ibc types
 			case ibctransfertypes.ModuleName:

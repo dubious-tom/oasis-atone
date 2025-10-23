@@ -4,7 +4,9 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
+
+	// TODO ATOMONE: async-icq is incompatible with IBC v10, commented out
+	// icqkeeper "github.com/cosmos/ibc-apps/modules/async-icq/v8/keeper"
 
 	ibcratelimit "github.com/osmosis-labs/osmosis/v31/x/ibc-rate-limit"
 
@@ -22,9 +24,10 @@ func RegisterOsmoIonMetadata(ctx sdk.Context, bankKeeper bankkeeper.Keeper) {
 	registerOsmoIonMetadata(ctx, bankKeeper)
 }
 
-func SetICQParams(ctx sdk.Context, icqKeeper *icqkeeper.Keeper) {
-	setICQParams(ctx, icqKeeper)
-}
+// TODO ATOMONE: async-icq is incompatible with IBC v10, commented out
+// func SetICQParams(ctx sdk.Context, icqKeeper *icqkeeper.Keeper) {
+// 	setICQParams(ctx, icqKeeper)
+// }
 
 func MigrateBalancerPoolToSolidlyStable(ctx sdk.Context, gammKeeper *gammkeeper.Keeper, bankKeeper bankkeeper.Keeper, poolId uint64) {
 	migrateBalancerPoolToSolidlyStable(ctx, gammKeeper, bankKeeper, poolId)
